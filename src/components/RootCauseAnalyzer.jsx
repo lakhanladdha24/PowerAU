@@ -50,7 +50,7 @@ export default function RootCauseAnalyzer({ headers, rows, schema, context }) {
             AI Root Cause Analysis Engine
           </h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-            NeuroFlux isolates anomalies, inspects parameters, and constructs causal influence maps automatically.
+            PowerAU isolates anomalies, inspects parameters, and constructs causal influence maps automatically.
             {headers && rows && schema && ` Analyzing business context '${context || 'general'}' with ${rows.length} records across ${headers.length} properties (${Object.keys(schema).filter(col => schema[col] === 'Integer' || schema[col] === 'Float' || schema[col] === 'Currency').length} numerical features).`}
           </p>
         </div>
@@ -135,7 +135,7 @@ export default function RootCauseAnalyzer({ headers, rows, schema, context }) {
             Prescriptive Heuristics
           </h3>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-            NeuroFlux models recommended operational decisions based on Isolated Causal weights.
+            PowerAU models recommended operational decisions based on Isolated Causal weights.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

@@ -12,7 +12,7 @@ export default function RealTimeCopilot({ domain, dataHistory, anomalies }) {
       setMessages([
         {
           sender: 'ai',
-          text: `Hello! I am your NeuroFlux Live AI Analyst. I am monitoring the active **${domain.toUpperCase()}** telemetry feed. Ask me to explain anomalies, forecast values, or run a root-cause audit on current data.`
+          text: `Hello! I am your PowerAU Live AI Analyst. I am monitoring the active **${domain.toUpperCase()}** telemetry feed. Ask me to explain anomalies, forecast values, or run a root-cause audit on current data.`
         }
       ]);
     }, 0);

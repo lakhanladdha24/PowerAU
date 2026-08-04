@@ -17,7 +17,7 @@ import CollaborationWorkspace from './components/CollaborationWorkspace';
 import AuditLineage from './components/AuditLineage';
 import ReportGenerator from './components/ReportGenerator';
 
-// NeuroFlux AI Core Views
+// PowerAU Core Views
 import MultiAgentConsole from './components/MultiAgentConsole';
 import BusinessSimulator from './components/BusinessSimulator';
 import RootCauseAnalyzer from './components/RootCauseAnalyzer';
@@ -100,7 +100,7 @@ function App() {
   const [imputeNumeric, setImputeNumeric] = useState('mean'); // mean, median, mode
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
 
-  // NeuroFlux AI Core States
+  // PowerAU Core States
   const [maskSensitiveData, setMaskSensitiveData] = useState(false);
   const [remappings, setRemappings] = useState([]);
   const [hasSchemaDrift, setHasSchemaDrift] = useState(false);
@@ -320,7 +320,7 @@ function App() {
             const date = new Date();
             newRow[h] = date.toISOString().split('T')[0];
           } else if (type === 'Email') {
-            newRow[h] = `stream.user_${nextId}@neuroflux.ai`;
+            newRow[h] = `stream.user_${nextId}@powerau.ai`;
           } else if (type === 'Phone') {
             newRow[h] = `+1 (555) 019-${Math.floor(1000 + Math.random() * 9000)}`;
           } else if (type === 'Boolean') {
@@ -674,7 +674,7 @@ function App() {
             <Cpu size={24} color="#fff" />
           </div>
           <div>
-            <h1 className="logo-text">NeuroFlux AI</h1>
+            <h1 className="logo-text">PowerAU</h1>
             <p style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', marginTop: '-4px', fontWeight: '600' }}>
               Autonomous BI & Data Intelligence Operating System
             </p>

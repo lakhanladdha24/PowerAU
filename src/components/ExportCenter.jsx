@@ -112,7 +112,7 @@ export default function ExportCenter({ headers, rows, schema, datasetName }) {
           Pre-Export AI Validation Safeguards
         </h3>
         <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-          NeuroFlux tests all cleaned structures against relational BI requirements before enabling download channels.
+          PowerAU tests all cleaned structures against relational BI requirements before enabling download channels.
         </p>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

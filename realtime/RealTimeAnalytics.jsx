@@ -39,7 +39,7 @@ export default function RealTimeAnalytics() {
   // Reference for stream counter to keep clean indexing
   const streamHistoryRef = useRef([]);
 
-  const url = `ws://api.neuroflux.ai/stream/${selectedSource}`;
+  const url = `ws://api.powerau.ai/stream/${selectedSource}`;
 
   const handleResetStream = () => {
     webSocketManager.disconnect();
@@ -210,7 +210,7 @@ export default function RealTimeAnalytics() {
               >
                 <option value="stocks">Stock Market Telemetry (NFLX Options)</option>
                 <option value="iot">IoT Manufacturing (Robotic Arm Assembly)</option>
-                <option value="sales">Sales & E-commerce (NeuroFlux SaaS checkouts)</option>
+                <option value="sales">Sales & E-commerce (PowerAU SaaS checkouts)</option>
                 <option value="logistics">Logistics & Fleet (SF Transit Corridor)</option>
               </select>
             </div>

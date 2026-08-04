@@ -152,7 +152,7 @@ export default function Dashboard({
             </div>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>Ingestion Chamber: Upload Messy Business Data</h3>
             <p style={{ maxWidth: '540px', margin: '0 auto 16px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Drag & drop CSV, TSV, JSON, XML, YAML, or Excel XML files. The NeuroFlux semantic engine will auto-detect schemas, align drifted headers, and compile clean target ledger sets.
+              Drag & drop CSV, TSV, JSON, XML, YAML, or Excel XML files. The PowerAU semantic engine will auto-detect schemas, align drifted headers, and compile clean target ledger sets.
             </p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '640px', margin: '0 auto 20px' }}>
               {['CSV', 'TSV', 'JSON', 'XML', 'YAML', 'Excel XML', 'TXT', 'SQL Database', 'REST APIs', 'CRM/ERP', 'Live Streams'].map(c => (

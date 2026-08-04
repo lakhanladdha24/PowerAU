@@ -598,7 +598,7 @@ export default function AICopilot({
               case 'collect':
                 return [
                   { label: "Verify variables mapping", prompt: "Do the columns of my dataset map to the locked churn framework?" },
-                  { label: "Simulate database schema drift", prompt: "Explain how schema drift remappings work in NeuroFlux." }
+                  { label: "Simulate database schema drift", prompt: "Explain how schema drift remappings work in PowerAU." }
                 ];
               case 'investigate':
                 return [

@@ -270,7 +270,7 @@ export function generateSalesRecord() {
     { name: 'Core AI Processing Unit', price: 1200.0 },
     { name: 'Edge Telemetry Module', price: 350.0 },
     { name: 'SaaS Stream Connector', price: 99.0 },
-    { name: 'NeuroFlux Dev License', price: 499.0 },
+    { name: 'PowerAU Dev License', price: 499.0 },
     { name: 'API Access Key (Enterprise)', price: 2500.0 }
   ];
 

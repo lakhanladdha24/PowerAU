@@ -4,7 +4,7 @@
  */
 export class SimulatedWebSocket {
   constructor(options = {}) {
-    this.url = options.url || 'ws://api.neuroflux.ai/stream';
+    this.url = options.url || 'ws://api.powerau.ai/stream';
     this.onMessageCallback = null;
     this.onStatusCallback = null;
     this.status = 'disconnected'; // disconnected, connecting, connected, error

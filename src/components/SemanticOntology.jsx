@@ -116,7 +116,7 @@ export default function SemanticOntology({ headers, schema, context }) {
 
             {/* Right Side: Canonical Enterprise Schema */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', zIndex: 2 }}>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '-4px', textAlign: 'right' }}>NeuroFlux Unified Ontology</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '-4px', textAlign: 'right' }}>PowerAU Unified Ontology</div>
               {Object.keys(ontologyMappings).slice(0, 6).map((k) => {
                 const hasMatch = headers.includes(k);
                 return (
@@ -142,7 +142,7 @@ export default function SemanticOntology({ headers, schema, context }) {
             Semantic Glossary
           </h3>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-            NeuroFlux automatically builds a semantic catalog of mapped variables to preserve intelligence definitions for Power BI and Tableau.
+            PowerAU automatically builds a semantic catalog of mapped variables to preserve intelligence definitions for Power BI and Tableau.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', maxHeight: '230px', paddingRight: '4px' }}>

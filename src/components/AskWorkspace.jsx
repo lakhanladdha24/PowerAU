@@ -98,7 +98,7 @@ export default function AskWorkspace({ onSetProjectGoal }) {
             What business problem are we solving?
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '640px', marginBottom: '24px' }}>
-            NeuroFlux AI maps your plain-language goal to statistical models, target metrics, and structured datasets. Avoid building generic, cluttered dashboard grids.
+            PowerAU maps your plain-language goal to statistical models, target metrics, and structured datasets. Avoid building generic, cluttered dashboard grids.
           </p>
 
           <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
@@ -166,7 +166,7 @@ export default function AskWorkspace({ onSetProjectGoal }) {
             <Sparkles size={32} />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '6px' }}>NeuroFlux AI Architect Engine</h3>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '6px' }}>PowerAU Architect Engine</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Synthesizing goal variables, selecting KPIs, and setting data structure constraints...</p>
           </div>
         </div>
