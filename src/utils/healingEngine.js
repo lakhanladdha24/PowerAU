@@ -190,68 +190,96 @@ export function parseFileContent(fileName, fileText, delimiterConfig = 'auto') {
 export function parseCSV(text, delimiterConfig = 'auto') {
   if (!text) return { headers: [], rows: [] };
 
-  const rawLines = text.split(/\r?\n/);
-  if (rawLines.length === 0) return { headers: [], rows: [] };
-
-  // Detect headers from the first line
-  let headerLine = rawLines[0].trim();
-  let headers = [];
-  const papaparseConfig = { header: false };
+  // 1. Detect delimiter if auto
+  let delimiter = ',';
   if (delimiterConfig && delimiterConfig !== 'auto') {
-    papaparseConfig.delimiter = delimiterConfig;
-  }
-
-  if (delimiterConfig === 'auto' && headerLine.includes('|')) {
-    headers = headerLine.split('|').map(h => h.trim());
-  } else if (delimiterConfig === '|') {
-    headers = headerLine.split('|').map(h => h.trim());
+    delimiter = delimiterConfig;
   } else {
-    // Parse using PapaParse to handle quotes
-    const parsedHeader = Papa.parse(headerLine, papaparseConfig).data[0];
-    headers = parsedHeader ? parsedHeader.map(h => String(h || '').trim()) : [];
+    // Smart delimiter detection
+    const candidates = [',', ';', '\t', '|'];
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
+    
+    if (lines.length > 0) {
+      // Check if any candidate is perfectly consistent across first few lines
+      const sampleLines = lines.slice(0, 5);
+      let foundConsistent = false;
+      for (const cand of candidates) {
+        const counts = sampleLines.map(line => line.split(cand).length - 1);
+        const minCount = Math.min(...counts);
+        const maxCount = Math.max(...counts);
+        if (minCount > 0 && minCount === maxCount) {
+          delimiter = cand;
+          foundConsistent = true;
+          break;
+        }
+      }
+      
+      if (!foundConsistent) {
+        // Fallback to highest frequency candidate
+        let maxFreq = 0;
+        for (const cand of candidates) {
+          const avgFreq = sampleLines.reduce((acc, line) => acc + (line.split(cand).length - 1), 0) / sampleLines.length;
+          if (avgFreq > maxFreq) {
+            maxFreq = avgFreq;
+            delimiter = cand;
+          }
+        }
+        
+        // Also check space separation if frequency is low
+        if (maxFreq < 1) {
+          const spaceCounts = sampleLines.map(line => line.split(/\s+/).length - 1);
+          const minSpace = Math.min(...spaceCounts);
+          const maxSpace = Math.max(...spaceCounts);
+          if (minSpace > 1 && minSpace === maxSpace) {
+            delimiter = ' ';
+          }
+        }
+      }
+    }
   }
 
-  // Filter out empty headers
+  // 2. Parse using PapaParse with full content to ensure proper quote matching and multiline consistency
+  const papaparseConfig = {
+    header: false,
+    skipEmptyLines: true
+  };
+  
+  if (delimiter === ' ') {
+    papaparseConfig.delimiter = ' ';
+  } else {
+    papaparseConfig.delimiter = delimiter;
+  }
+  
+  const parsed = Papa.parse(text, papaparseConfig);
+  const parsedData = parsed.data || [];
+  
+  if (parsedData.length === 0) return { headers: [], rows: [] };
+  
+  // Extract headers from the first row
+  let headers = parsedData[0].map(h => String(h || '').trim());
+  // Filter out empty headers (matching original logic)
   headers = headers.filter(h => h !== '');
-
+  
   const lines = [];
-
-  for (let i = 1; i < rawLines.length; i++) {
-    const line = rawLines[i].trim();
-    if (!line) continue;
-
-    let rowValues;
+  for (let i = 1; i < parsedData.length; i++) {
+    let rowValues = parsedData[i].map(v => String(v || '').trim());
     
-    // 1. If line has pipe separators
-    if (delimiterConfig === 'auto' && line.includes('|')) {
-      rowValues = line.split('|').map(v => v.trim());
-    } else if (delimiterConfig === '|') {
-      rowValues = line.split('|').map(v => v.trim());
-    } else {
-      // 2. Custom or comma separated lines
-      const parsedLine = Papa.parse(line, papaparseConfig).data[0];
-      rowValues = parsedLine ? parsedLine.map(v => String(v || '').trim()) : [];
-    }
-
-    // 3. Handle trailing commas
+    // Handle trailing commas / NA / null / ? values
     rowValues = rowValues.map(v => v === 'NA' || v === '?' || v === 'NaN' || v === 'null' ? '' : v);
-
-    // 4. Handle concatenated duplicate rows (e.g. 16 columns instead of 8)
-    if (rowValues.length > headers.length && rowValues.length >= headers.length * 2 - 1) {
-      // Check if values repeat
-      rowValues = rowValues.slice(0, headers.length);
-    } else if (rowValues.length > headers.length) {
+    
+    // Handle concatenated duplicate rows (matching original logic)
+    if (rowValues.length > headers.length) {
       rowValues = rowValues.slice(0, headers.length);
     }
-
-    // 5. Pad columns if row is shorter
+    
+    // Pad columns if row is shorter
     while (rowValues.length < headers.length) {
       rowValues.push('');
     }
-
+    
     lines.push(rowValues);
   }
-
+  
   // Convert to rows objects
   const rows = lines.map((r, rowIndex) => {
     const obj = { id: rowIndex + 1 };
