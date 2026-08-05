@@ -178,6 +178,8 @@ export function parseFileContent(fileName, fileText, delimiterConfig = 'auto') {
       return parseYAML(fileText);
     case 'tsv':
       return parseCSV(fileText, '\t');
+    case 'pdf':
+      return parseCSV(fileText, ',');
     case 'csv':
     default:
       return parseCSV(fileText, delimiterConfig);

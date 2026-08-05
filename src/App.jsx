@@ -137,9 +137,24 @@ function App() {
   }, [isAutoTheme]);
 
   // 1. Process dataset upload or sandbox click
-  const handleDatasetLoad = (name, text, currentDelimiter = delimiter, currentImpute = imputeNumeric) => {
+  const handleDatasetLoad = async (name, textOrPromise, currentDelimiter = delimiter, currentImpute = imputeNumeric) => {
     setIsProcessing(true);
     setDatasetName(name);
+    
+    let text;
+    try {
+      if (textOrPromise instanceof Promise || (textOrPromise && typeof textOrPromise.then === 'function')) {
+        text = await textOrPromise;
+      } else {
+        text = textOrPromise;
+      }
+    } catch (err) {
+      console.error("Failed to resolve dataset content:", err);
+      setIsProcessing(false);
+      alert("Error parsing file: " + (err.message || err));
+      return;
+    }
+    
     setRawContent(text);
     
     // Parse raw text based on file format/extension

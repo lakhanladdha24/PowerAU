@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Upload, Database, ShoppingBag, Users, Cpu, FileText, Sliders, BarChart, RefreshCw } from 'lucide-react';
 import { generateMessySample } from '../utils/healingEngine';
+import { parsePdfToCsv } from '../utils/pdfParser';
 
 export default function Dashboard({ 
   onDatasetLoad, 
@@ -41,11 +42,30 @@ export default function Dashboard({
   };
 
   const processFile = (file) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      onDatasetLoad(file.name, event.target.result);
-    };
-    reader.readAsText(file);
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'pdf') {
+      const pdfPromise = new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          try {
+            const arrayBuffer = event.target.result;
+            const csvText = await parsePdfToCsv(arrayBuffer);
+            resolve(csvText);
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+      onDatasetLoad(file.name, pdfPromise);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        onDatasetLoad(file.name, event.target.result);
+      };
+      reader.readAsText(file);
+    }
   };
 
   const loadSample = (type) => {
@@ -142,7 +162,7 @@ export default function Dashboard({
           <input 
             type="file" 
             id="csv-file-input" 
-            accept=".csv, .tsv, .json, .xml, .yaml, .yml, .xls, .txt" 
+            accept=".csv, .tsv, .json, .xml, .yaml, .yml, .xls, .txt, .pdf" 
             onChange={handleFileSelect} 
             style={{ display: 'none' }}
           />
@@ -152,10 +172,10 @@ export default function Dashboard({
             </div>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>Ingestion Chamber: Upload Messy Business Data</h3>
             <p style={{ maxWidth: '540px', margin: '0 auto 16px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Drag & drop CSV, TSV, JSON, XML, YAML, or Excel XML files. The PowerAU semantic engine will auto-detect schemas, align drifted headers, and compile clean target ledger sets.
+              Drag & drop CSV, TSV, JSON, XML, YAML, Excel XML, or PDF files. The PowerAU semantic engine will auto-detect schemas, align drifted headers, and compile clean target ledger sets.
             </p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '640px', margin: '0 auto 20px' }}>
-              {['CSV', 'TSV', 'JSON', 'XML', 'YAML', 'Excel XML', 'TXT', 'SQL Database', 'REST APIs', 'CRM/ERP', 'Live Streams'].map(c => (
+              {['CSV', 'TSV', 'JSON', 'XML', 'YAML', 'Excel XML', 'PDF', 'TXT', 'SQL Database', 'REST APIs', 'CRM/ERP', 'Live Streams'].map(c => (
                 <span key={c} style={{ fontSize: '0.65rem', padding: '3px 8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-muted)' }}>
                   {c}
                 </span>
