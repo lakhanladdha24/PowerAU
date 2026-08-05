@@ -59,6 +59,8 @@ export default function Dashboard({
         reader.readAsArrayBuffer(file);
       });
       onDatasetLoad(file.name, pdfPromise);
+    } else if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff'].includes(ext)) {
+      onDatasetLoad(file.name, "IMAGE_DATA");
     } else {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -162,7 +164,7 @@ export default function Dashboard({
           <input 
             type="file" 
             id="csv-file-input" 
-            accept=".csv, .tsv, .json, .xml, .yaml, .yml, .xls, .txt, .pdf" 
+            accept=".csv, .tsv, .json, .xml, .yaml, .yml, .xls, .xlsx, .txt, .pdf, .doc, .docx, .log, .eml, .png, .jpg, .jpeg, .gif, .bmp, .tiff" 
             onChange={handleFileSelect} 
             style={{ display: 'none' }}
           />
@@ -172,10 +174,10 @@ export default function Dashboard({
             </div>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>Ingestion Chamber: Upload Messy Business Data</h3>
             <p style={{ maxWidth: '540px', margin: '0 auto 16px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Drag & drop CSV, TSV, JSON, XML, YAML, Excel XML, or PDF files. The PowerAU semantic engine will auto-detect schemas, align drifted headers, and compile clean target ledger sets.
+              Drag & drop CSV, Excel, Word, PDF, JSON, XML, YAML, Logs, EML, or Image files. The PowerAU AI engine will auto-detect formats, reconstruct tables, and execute advanced self-healing logic.
             </p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '640px', margin: '0 auto 20px' }}>
-              {['CSV', 'TSV', 'JSON', 'XML', 'YAML', 'Excel XML', 'PDF', 'TXT', 'SQL Database', 'REST APIs', 'CRM/ERP', 'Live Streams'].map(c => (
+              {['CSV', 'Excel', 'Word', 'PDF', 'JSON', 'XML', 'YAML', 'System Logs', 'Email EML', 'Images', 'TXT', 'SQL DB', 'CRM/ERP'].map(c => (
                 <span key={c} style={{ fontSize: '0.65rem', padding: '3px 8px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-muted)' }}>
                   {c}
                 </span>

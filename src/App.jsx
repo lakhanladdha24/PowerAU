@@ -16,6 +16,8 @@ import PredictiveAnalytics from './components/PredictiveAnalytics';
 import CollaborationWorkspace from './components/CollaborationWorkspace';
 import AuditLineage from './components/AuditLineage';
 import ReportGenerator from './components/ReportGenerator';
+import AiPreProcessorChamber from './components/AiPreProcessorChamber';
+import { reconstructTable, executeAdvancedAiClean } from './utils/aiCleaningEngine';
 
 // PowerAU Core Views
 import MultiAgentConsole from './components/MultiAgentConsole';
@@ -105,6 +107,8 @@ function App() {
   const [remappings, setRemappings] = useState([]);
   const [hasSchemaDrift, setHasSchemaDrift] = useState(false);
   const [isStreamingActive, setIsStreamingActive] = useState(false);
+  const [aiChamberData, setAiChamberData] = useState(null);
+  const [isAiChamberActive, setIsAiChamberActive] = useState(false);
 
   // Time-Based Theme States & Synchronizer
   const getThemeFromTime = () => {
@@ -157,11 +161,50 @@ function App() {
     
     setRawContent(text);
     
-    // Parse raw text based on file format/extension
-    const { headers: parsedHeaders, rows: parsedRows } = parseFileContent(name, text, currentDelimiter);
+    // Run AI Structuring (Image / Log / Email / Invoice Reconstruction)
+    let initialParsed = reconstructTable(name, text);
+    if (!initialParsed) {
+      initialParsed = parseFileContent(name, text, currentDelimiter);
+    }
     
-    // Run AI Schema Drift remapping
-    const driftResult = detectAndMapSchemaDrift(parsedHeaders, parsedRows);
+    // Execute Advanced AI Data Cleaning, Type Standardizations & Outlier Audits
+    const cleanedResult = executeAdvancedAiClean(initialParsed.headers, initialParsed.rows);
+    
+    // Update State to display AI Chamber dashboard preview
+    setAiChamberData({
+      fileName: name,
+      originalData: initialParsed,
+      cleanedData: { headers: cleanedResult.headers, rows: cleanedResult.rows },
+      transformationLog: cleanedResult.transformationLog,
+      qualityScore: cleanedResult.qualityScore,
+      completeness: cleanedResult.completeness,
+      schema: cleanedResult.schema,
+      emptyCount: cleanedResult.emptyCount,
+      healsCount: cleanedResult.healsCount,
+      anomaliesCount: cleanedResult.anomaliesCount,
+      
+      // Save arguments to execute BI flow upon approval
+      name,
+      text,
+      currentDelimiter,
+      currentImpute
+    });
+    
+    setIsAiChamberActive(true);
+    setIsProcessing(false);
+  };
+
+  // Callback to finalize preprocessor work and pass clean data to the PowerAU BI pipeline
+  const handleProceedFromChamber = () => {
+    if (!aiChamberData) return;
+    
+    setIsAiChamberActive(false);
+    setIsProcessing(true);
+    
+    const { name, text, cleanedData, currentDelimiter, currentImpute, transformationLog } = aiChamberData;
+    
+    // Run AI Schema Drift remapping on CLEANED dataset
+    const driftResult = detectAndMapSchemaDrift(cleanedData.headers, cleanedData.rows);
     const hasDrift = driftResult.remappings.length > 0;
     setHasSchemaDrift(hasDrift);
     setRemappings(driftResult.remappings);
@@ -175,7 +218,7 @@ function App() {
     // Run anomaly audit on raw records
     const auditResults = auditData(finalHeaders, finalRows, inferredSchema);
     
-    // Run self-healing rules (incorporates swapped column and merged column splits)
+    // Run self-healing rules
     const { healedRows, changes, duplicateCount: dups } = healData(finalHeaders, finalRows, inferredSchema, { imputeNumeric: currentImpute });
 
     // Prepend drift corrections to changes log
@@ -192,6 +235,18 @@ function App() {
         });
       });
     }
+
+    // Prepend all chamber-level AI preprocessor transformations to changes log
+    transformationLog.forEach(log => {
+      finalChanges.push({
+        row: log.row,
+        column: log.column,
+        type: log.type,
+        oldValue: '',
+        newValue: '',
+        description: log.description
+      });
+    });
 
     // Infer business context domain
     const bizContext = inferBusinessContext(finalHeaders, healedRows);
@@ -308,6 +363,8 @@ function App() {
     setHasSchemaDrift(false);
     setIsStreamingActive(false);
     setProjectGoal(null);
+    setAiChamberData(null);
+    setIsAiChamberActive(false);
     setIsGuidedMode(false);
     setCurrentStage('collect');
     setUnlockedStages(['collect']);
@@ -882,7 +939,25 @@ function App() {
       {/* D. Main Stage Panel */}
       {!isProcessing && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {workflowMode === 'realtime' ? (
+          {isAiChamberActive && aiChamberData ? (
+            <AiPreProcessorChamber
+              fileName={aiChamberData.fileName}
+              originalData={aiChamberData.originalData}
+              cleanedData={aiChamberData.cleanedData}
+              transformationLog={aiChamberData.transformationLog}
+              qualityScore={aiChamberData.qualityScore}
+              completeness={aiChamberData.completeness}
+              schema={aiChamberData.schema}
+              emptyCount={aiChamberData.emptyCount}
+              healsCount={aiChamberData.healsCount}
+              anomaliesCount={aiChamberData.anomaliesCount}
+              onSendToAnalytics={handleProceedFromChamber}
+              onReset={() => {
+                setIsAiChamberActive(false);
+                handleReset();
+              }}
+            />
+          ) : workflowMode === 'realtime' ? (
             <RealTimeAnalytics />
           ) : isGuidedMode ? (
             <>
