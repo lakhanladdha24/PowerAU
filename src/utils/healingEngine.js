@@ -162,28 +162,116 @@ export function parseYAML(text) {
   }
 }
 
+// Helper: Parse Unstructured Text to headers and rows fallback
+export function parseUnstructuredText(text) {
+  if (!text) return { headers: ["Line Content"], rows: [] };
+
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
+  if (lines.length === 0) return { headers: ["Line Content"], rows: [] };
+
+  // 1. Try consistent delimiters
+  const candidates = [',', ';', '\t', '|'];
+  let bestDelim = null;
+  let maxCols = 0;
+  
+  const sampleLines = lines.slice(0, 10);
+  for (const cand of candidates) {
+    const counts = sampleLines.map(line => line.split(cand).length);
+    const minCount = Math.min(...counts);
+    const maxCount = Math.max(...counts);
+    if (minCount > 1 && minCount === maxCount) {
+      bestDelim = cand;
+      maxCols = minCount;
+      break;
+    }
+  }
+
+  // 2. Try whitespace/space separation if no other delimiter is consistent
+  if (!bestDelim) {
+    const spaceCounts = sampleLines.map(line => line.split(/\s+/).length);
+    const minSpace = Math.min(...spaceCounts);
+    const maxSpace = Math.max(...spaceCounts);
+    if (minSpace > 1 && minSpace === maxSpace) {
+      bestDelim = /\s+/;
+      maxCols = minSpace;
+    }
+  }
+
+  let headers = [];
+  let dataRows = [];
+
+  if (bestDelim) {
+    const parsedLines = lines.map(line => line.split(bestDelim).map(v => v.trim()));
+    const firstLineCells = parsedLines[0];
+    const looksLikeHeader = firstLineCells.every(cell => isNaN(Number(cell)) && cell.length > 0);
+    
+    if (looksLikeHeader) {
+      headers = firstLineCells.map((h, i) => h || `Column_${i + 1}`);
+      dataRows = parsedLines.slice(1);
+    } else {
+      headers = firstLineCells.map((_, i) => `Column_${i + 1}`);
+      dataRows = parsedLines;
+    }
+  } else {
+    headers = ["Line Content"];
+    dataRows = lines.map(line => [line]);
+  }
+
+  const rows = dataRows.map((r, rowIndex) => {
+    const obj = { id: rowIndex + 1 };
+    headers.forEach((h, colIndex) => {
+      obj[h] = r[colIndex] !== undefined ? r[colIndex] : '';
+    });
+    return obj;
+  });
+
+  return { headers, rows };
+}
+
 // Router: Parse file contents based on name and extension
 export function parseFileContent(fileName, fileText, delimiterConfig = 'auto') {
-  if (!fileName) return parseCSV(fileText, delimiterConfig);
-  const ext = fileName.split('.').pop().toLowerCase();
-
-  switch (ext) {
-    case 'json':
-      return parseJSON(fileText);
-    case 'xml':
-    case 'xls':
-      return parseXML(fileText);
-    case 'yaml':
-    case 'yml':
-      return parseYAML(fileText);
-    case 'tsv':
-      return parseCSV(fileText, '\t');
-    case 'pdf':
-      return parseCSV(fileText, ',');
-    case 'csv':
-    default:
-      return parseCSV(fileText, delimiterConfig);
+  let result = { headers: [], rows: [] };
+  
+  try {
+    if (!fileName) {
+      result = parseCSV(fileText, delimiterConfig);
+    } else {
+      const ext = fileName.split('.').pop().toLowerCase();
+      switch (ext) {
+        case 'json':
+          result = parseJSON(fileText);
+          break;
+        case 'xml':
+        case 'xls':
+          result = parseXML(fileText);
+          break;
+        case 'yaml':
+        case 'yml':
+          result = parseYAML(fileText);
+          break;
+        case 'tsv':
+          result = parseCSV(fileText, '\t');
+          break;
+        case 'pdf':
+          result = parseCSV(fileText, ',');
+          break;
+        case 'csv':
+        default:
+          result = parseCSV(fileText, delimiterConfig);
+          break;
+      }
+    }
+  } catch (err) {
+    console.error("Error in primary file parser, falling back to unstructured parser:", err);
+    result = { headers: [], rows: [] };
   }
+
+  // Fallback: If parsing resulted in no headers/rows or failed, convert to grid
+  if (!result || !result.headers || result.headers.length === 0 || !result.rows || result.rows.length === 0) {
+    result = parseUnstructuredText(fileText);
+  }
+  
+  return result;
 }
 
 // Helper: Parse CSV Text using PapaParse and pre-processor
